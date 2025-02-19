@@ -48,7 +48,7 @@ class SequentialThinkingServer:
             raise ValueError("Please replace 'your_openai_api_key' in .env with a valid OpenAI API key")
         self.client = AsyncOpenAI(api_key=self.api_key)
 
-    @with_logging(logger)
+    @with_logging
     async def analyze_content(self, request: AnalysisRequest) -> AnalysisResponse:
         try:
             # 构建提示词
@@ -56,8 +56,8 @@ class SequentialThinkingServer:
             user_prompt = self._build_user_prompt(request)
 
             logger.debug(
+                "Prompts generated",
                 event="prompts_generated",
-                function="analyze_content",
                 details={
                     "system_prompt": system_prompt,
                     "user_prompt": user_prompt
@@ -75,8 +75,8 @@ class SequentialThinkingServer:
                 max_tokens=2000
             )
             logger.debug(
+                "OpenAI response received",
                 event="openai_response_received",
-                function="analyze_content",
                 details={
                     "model": response.model,
                     "total_tokens": response.usage.total_tokens,
@@ -87,8 +87,8 @@ class SequentialThinkingServer:
             # 解析响应
             analysis_result = self._parse_response(response.choices[0].message)
             logger.debug(
+                "Analysis result processed",
                 event="analysis_result",
-                function="analyze_content",
                 details={"result": analysis_result}
             )
 
@@ -105,8 +105,8 @@ class SequentialThinkingServer:
                 }
             )
             logger.info(
+                "Request processed successfully",
                 event="request_success",
-                function="analyze_content",
                 details={
                     "segments_count": len(analysis_result["segments"]),
                     "total_tokens": response.usage.total_tokens
@@ -116,8 +116,8 @@ class SequentialThinkingServer:
 
         except OpenAIError as api_error:
             logger.error(
+                "OpenAI API error occurred",
                 event="openai_api_error",
-                function="analyze_content",
                 details={"error_message": str(api_error)}
             )
             # 判断是否是速率限制错误
@@ -132,8 +132,8 @@ class SequentialThinkingServer:
             )
         except asyncio.TimeoutError as timeout_error:
             logger.error(
+                "Request timed out",
                 event="request_timeout",
-                function="analyze_content",
                 details={"error_message": str(timeout_error)}
             )
             raise HTTPException(
@@ -142,8 +142,8 @@ class SequentialThinkingServer:
             )
         except Exception as e:
             logger.error(
+                "Unexpected error occurred",
                 event="unexpected_error",
-                function="analyze_content",
                 details={
                     "error_type": type(e).__name__,
                     "error_message": str(e)
@@ -398,8 +398,8 @@ class SequentialThinkingServer:
                 return {'segments': [current_segment]}
         except Exception as e:
             logger.error(
+                "Error parsing response",
                 event="response_parsing_error",
-                function="_parse_response",
                 details={"error_message": str(e)}
             )
             raise HTTPException(
@@ -470,8 +470,8 @@ async def analyze_content(request: AnalysisRequest):
     start_time = time.time()
     request_id = str(uuid.uuid4())
     logger.info(
+        f"Request started: {request_id}",
         event="request_start",
-        function="analyze_content",
         details={
             "request_id": request_id,
             "content_length": len(request.content),
@@ -483,8 +483,8 @@ async def analyze_content(request: AnalysisRequest):
     try:
         result = await server.analyze_content(request)
         logger.info(
+            "Request completed successfully",
             event="request_end",
-            function="analyze_content",
             details={
                 "processing_time_ms": (time.time() - start_time) * 1000,
                 "status": "success"
@@ -493,8 +493,8 @@ async def analyze_content(request: AnalysisRequest):
         return result
     except HTTPException as http_error:
         logger.error(
+            f"HTTP error occurred: {http_error.detail}",
             event="request_error",
-            function="analyze_content",
             details={
                 "error_type": "HTTPException",
                 "error_message": http_error.detail,
@@ -505,8 +505,8 @@ async def analyze_content(request: AnalysisRequest):
         raise  # 直接重新抛出原始异常
     except Exception as e:
         logger.error(
+            f"Error in analyze_content: {str(e)}",
             event="request_error",
-            function="analyze_content",
             details={
                 "error_type": type(e).__name__,
                 "error_message": str(e),

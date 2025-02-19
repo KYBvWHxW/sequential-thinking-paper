@@ -10,7 +10,7 @@ from typing import Dict, Any
 from openai import OpenAIError
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
-from mcp_servers.sequential_thinking.server import app, SequentialThinkingServer, AnalysisRequest
+from sequential_thinking.server import app, SequentialThinkingServer, AnalysisRequest
 from unittest.mock import AsyncMock, patch, MagicMock
 
 # Configure logging
