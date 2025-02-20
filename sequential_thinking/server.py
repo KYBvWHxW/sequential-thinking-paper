@@ -41,11 +41,9 @@ app = FastAPI()
 
 class SequentialThinkingServer:
     def __init__(self):
-        self.api_key = os.getenv("OPENAI_API_KEY")
+        self.api_key = os.environ.get("OPENAI_API_KEY")
         if not self.api_key:
             raise ValueError("OPENAI_API_KEY not found in environment variables")
-        if self.api_key == "your_openai_api_key":
-            raise ValueError("Please replace 'your_openai_api_key' in .env with a valid OpenAI API key")
         self.client = AsyncOpenAI(api_key=self.api_key)
 
     @with_logging
